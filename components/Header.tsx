@@ -37,7 +37,7 @@ const Header = () => {
             <SignedOut>
               <SignInButton mode="modal">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   className="bg-gradient-to-r from-blue-600 to-blue-400 text-transparent bg-clip-text"
                 >
                   Sign In
