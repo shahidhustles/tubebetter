@@ -12,39 +12,39 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-4">
             {/* Pulse Animation Logo  */}
-            <AgentPulse size="small" color="blue" />
+            <AgentPulse size="small" color="blue" />  
             <h1 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
               TubeBetter
             </h1>
           </Link>
         </div>
         <div className="flex items-center gap-4">
-            <SignedIn>
-              <Link href="/manage-plan">
-                <Button
-                  variant="outline"
-                  className="mr-4 bg-gradient-to-r from-blue-600 to-blue-400 text-transparent bg-clip-text"
-                >
-                  Manage Plan
-                </Button>
-              </Link>
+          <SignedIn>
+            <Link href="/manage-plan">
+              <Button
+              variant="outline"
+                className="mr-4 bg-gradient-to-r from-blue-600 to-blue-400 text-transparent bg-clip-text"
+              >
+                Manage Plan
+              </Button>
+            </Link>
 
-              <div className="p-2 w-10 h-10 flex items-center justify-center rounded-full border bg-blue-100 border-blue-200">
-                <UserButton />
-              </div>
-            </SignedIn>
+            <div className="p-2 w-10 h-10 flex items-center justify-center rounded-full border bg-blue-100 border-blue-200">
+              <UserButton />
+            </div>
+          </SignedIn>
 
-            <SignedOut>
-              <SignInButton mode="modal">
-                <Button
-                  variant="outline"
-                  className="bg-gradient-to-r from-blue-600 to-blue-400 text-transparent bg-clip-text"
-                >
-                  Sign In
-                </Button>
-              </SignInButton>
-            </SignedOut>
-          </div>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <Button
+                variant="outline"
+                className="bg-gradient-to-r from-blue-600 to-blue-400 text-transparent bg-clip-text"
+              >
+                Sign In
+              </Button>
+            </SignInButton>
+          </SignedOut>
+        </div>
       </div>
     </header>
   );

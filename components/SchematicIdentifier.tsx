@@ -4,7 +4,7 @@ import { useUser } from "@clerk/nextjs";
 import { useSchematicEvents } from "@schematichq/schematic-react";
 import { useEffect } from "react";
 
-const SchematicWrapped = ({ children }: { children: React.ReactNode }) => {
+const SchematicIdentifier = ({ children }: { children: React.ReactNode }) => {
   const { identify } = useSchematicEvents();
   const { user } = useUser();
 
@@ -35,4 +35,4 @@ const SchematicWrapped = ({ children }: { children: React.ReactNode }) => {
   }, [user, identify]);
   return children;
 };
-export default SchematicWrapped;
+export default SchematicIdentifier;
