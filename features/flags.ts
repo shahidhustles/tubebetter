@@ -33,3 +33,7 @@ export enum FeatureFlag {
 // Roll out features gradually
 // Control feature access based on user permissions/subscriptions
 // Track feature usage via the associated events
+
+// In TypeScript, Record<K, T> is a utility type that creates an object type where:
+// K defines the allowed property keys (usually a union of string literals or an enum)
+// T defines the type of values those properties can hold

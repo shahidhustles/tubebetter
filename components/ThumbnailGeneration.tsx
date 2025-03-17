@@ -8,15 +8,15 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 const ThumbnailGeneration = ({ videoId }: { videoId: string }) => {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
 
-  if (!user) {
+  if (!user?.id && isLoaded) {
     throw new Error("Unauthorized");
   }
 
   const images = useQuery(api.images.getImages, {
-    userId: user?.id,
     videoId: videoId,
+    userId: user?.id || "",
   });
 
   return (
@@ -29,7 +29,9 @@ const ThumbnailGeneration = ({ videoId }: { videoId: string }) => {
       </div>
 
       {/* Simple horizontal scroll for images */}
-      <div className={`flex overflow-x-auto gap-4 ${images?.length && "mt-4"}`}>
+      <div
+        className={`flex overflow-x-auto gap-4 ${images?.length ? "mt-4" : ""}`}
+      >
         {images?.map(
           (image) =>
             image.url && (

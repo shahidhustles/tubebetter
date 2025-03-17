@@ -5,11 +5,21 @@ import Usage from "./Usage";
 import { FeatureFlag } from "@/features/flags";
 import { useSchematicEntitlement } from "@schematichq/schematic-react";
 import { Copy } from "lucide-react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 const TitleGeneration = ({ videoId }: { videoId: string }) => {
   const { user } = useUser();
 
-  const titles = []; //TODO: Pull titles from convex db
+  // if (!user) {
+  //   throw new Error("UnAuthorized");
+  // }
+
+  const titles = [];
+  // const titles = useQuery(api.titles.list, {
+  //   videoId: videoId,
+  //   userId: user?.id,
+  // });
 
   const { value: isTitleGenerationEnabled } = useSchematicEntitlement(
     FeatureFlag.TITLE_GENERATIONS
