@@ -1,5 +1,7 @@
 import { v } from "convex/values";
-import { query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
+
+//https://docs.convex.dev/file-storage/upload-files
 
 export const getImages = query({
   args: {
@@ -9,12 +11,12 @@ export const getImages = query({
   handler: async (ctx, args) => {
     const images = await ctx.db
       .query("images")
-      .withIndex("by_user_and_video")
-      .filter((q) => q.eq("userId", args.userId))
-      .filter((q) => q.eq("videoId", args.videoId))
+      .withIndex("by_user_and_video", (q) =>
+        q.eq("userId", args.userId).eq("videoId", args.videoId)
+      )
       .collect();
 
-    const imageUrls = Promise.all(
+    const imageUrls = await Promise.all(
       images.map(async (image) => ({
         ...image,
         url: await ctx.storage.getUrl(image.storageId),
@@ -22,5 +24,51 @@ export const getImages = query({
     );
 
     return imageUrls;
+  },
+});
+
+export const generateUploadUrl = mutation({
+  handler: async (ctx) => {
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+// Store the storageId for a video
+export const storeImage = mutation({
+  args: {
+    storageId: v.id("_storage"),
+    videoId: v.string(),
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const imageDocId = await ctx.db.insert("images", {
+      storageId: args.storageId,
+      userId: args.userId,
+      videoId: args.videoId,
+    });
+
+    return imageDocId;
+  },
+});
+
+// Get images for a specific user and video combination (.first())
+export const getImage = query({
+  args: {
+    userId: v.string(),
+    videoId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const image = await ctx.db
+      .query("images")
+      .withIndex("by_user_and_video", (q) =>
+        q.eq("userId", args.userId).eq("videoId", args.videoId)
+      )
+      .first();
+
+    if (!image) {
+      return null;
+    }
+
+    return await ctx.storage.getUrl(image.storageId);
   },
 });

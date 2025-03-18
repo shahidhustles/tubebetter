@@ -1,10 +1,14 @@
 import { getVideoDetails } from "@/actions/getVideoDetails";
 import { createGroq } from "@ai-sdk/groq";
 import { currentUser } from "@clerk/nextjs/server";
-import { streamText } from "ai";
+import { streamText, tool } from "ai";
 import { NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { fetchTranscript } from "@/tools/fetchTranscript";
+import { generateImage } from "@/tools/generateImage";
+import { z } from "zod";
+import { getVideoIdFromUrl } from "@/lib/getVideoIdFromUrl";
+import generateTitle from "@/tools/generateTitles";
 
 const groq = createGroq({
   apiKey: process.env.GROQ_API_KEY,
@@ -31,11 +35,12 @@ export async function POST(req: Request) {
    to 'Manage Plan' in the header and upgrade. If any tool is used, analyse the response and if it contains a cache, 
    explain that the transcript is cached because they previously transcribed the video saving the user a token - use words
     like database instead of cache to make it more easy to understand. Please format for notion. For every question which 
-    requires more context you can use "fetchTranscript" tool from your arsenal`;
+    requires more context you can use "fetchTranscript" tool from your arsenal,take the help of the transcript and then decide on the best performing prompt for the thumbnail,
+     for generating thumbnail use "generateImage" tool`;
 
   const result = streamText({
-    model : groq("gemma2-9b-it"),
-    // model: google("gemini-1.5-flash"),
+    // model : groq("gemma2-9b-it"),
+    model: google("gemini-1.5-flash"),
     messages: [
       {
         role: "system",
@@ -43,7 +48,33 @@ export async function POST(req: Request) {
       },
       ...messages,
     ],
-    tools: { fetchTranscript: fetchTranscript },
+    tools: {
+      fetchTranscript: fetchTranscript,
+      generateImage: generateImage(user?.id, videoId),
+      generateTitle: generateTitle,
+      getVideoDetails: tool({
+        parameters: z.object({
+          videoId: z
+            .string()
+            .describe("The youtube video id to get details about it."),
+        }),
+        description: "GEt the details of a Youtube video",
+        execute: async ({ videoId }) => {
+          const videoDetails = getVideoDetails(videoId);
+          return videoDetails;
+        },
+      }),
+      extractVideoId: tool({
+        description: "Extract the video ID from a URL",
+        parameters: z.object({
+          url: z.string().describe("The URL to extract the video ID from"),
+        }),
+        execute: async ({ url }) => {
+          const videoId =  getVideoIdFromUrl(url);
+          return { videoId };
+        },
+      }),
+    },
   });
 
   return result.toDataStreamResponse();

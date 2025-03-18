@@ -4,7 +4,11 @@ import ReactMarkdown from "react-markdown";
 import { useChat } from "@ai-sdk/react";
 import { Button } from "./ui/button";
 import { UIMessage } from "ai";
-import { ToolInvocationUIPart } from "@ai-sdk/ui-utils";
+import { Message, ToolInvocationUIPart } from "@ai-sdk/ui-utils";
+import { useSchematicFlag } from "@schematichq/schematic-react";
+import { FeatureFlag } from "@/features/flags";
+import { ImageIcon, LetterText, PenIcon } from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
 
 const formatToolInvocation = (part: ToolPart) => {
   if (!part.toolInvocation) return "Unknown Tool";
@@ -23,12 +27,61 @@ interface ToolPart {
 }
 
 const AIAgentChat = ({ videoId }: { videoId: string }) => {
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
-    maxSteps: 5,
-    body: {
-      videoId: videoId,
-    },
-  });
+  const { messages, input, handleInputChange, handleSubmit, append, status } =
+    useChat({
+      maxSteps: 5,
+      body: {
+        videoId: videoId,
+      },
+    });
+
+  //returns if the feature is entitled in the users plan
+  //useSchematicFlag() on client, and client.flag() on server
+  const isScriptGenerationEnabled = useSchematicFlag(
+    FeatureFlag.SCRIPT_GENERATION
+  );
+  const isImageGenerationEnabled = useSchematicFlag(
+    FeatureFlag.IMAGE_GENERATION
+  );
+  const isTitleGenerationEnabled = useSchematicFlag(
+    FeatureFlag.TITLE_GENERATIONS
+  );
+  const isVideoAnalysisEnabled = useSchematicFlag(FeatureFlag.ANALYSE_VIDEO);
+
+  //pragrammaticaly generate script
+  const generateScript = async () => {
+    const randomId = uuidv4();
+
+    const userMessage: Message = {
+      id: `generate-script-${randomId}`,
+      role: "user",
+      content:
+        "Generate a step-by-step shooting script for this video that I can use on my own channel to produce a video that is similar to this one, dont do any other steps such as generating a image, just generate the script only!",
+    };
+    append(userMessage);
+  };
+
+  //pragrammaticaly generate image
+  const generateImage = async () => {
+    const randomId = uuidv4();
+    const userMessage: Message = {
+      id: `generate-image-${randomId}`,
+      role: "user",
+      content: "Generate a thumbnail for this video",
+    };
+    append(userMessage);
+  };
+
+  //pragrammaticaly generate title
+  const generateTitle = async () => {
+    const randomId = uuidv4();
+    const userMessage: Message = {
+      id: `generate-title-${randomId}`,
+      role: "user",
+      content: "Generate a title for this video",
+    };
+    append(userMessage);
+  };
 
   // Function to render message content based on role and type
   const renderMessageContent = (message: UIMessage) => {
@@ -131,7 +184,11 @@ const AIAgentChat = ({ videoId }: { videoId: string }) => {
             <input
               value={input}
               type="text"
-              placeholder="Enter a question"
+              placeholder={
+                !isVideoAnalysisEnabled
+                  ? "Upgrade to ask anything about your video..."
+                  : "Ask anything about your video..."
+              }
               onChange={handleInputChange}
               className="flex-1 px-4 py-2 text-sm border border-gray-200 
               rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500
@@ -139,12 +196,57 @@ const AIAgentChat = ({ videoId }: { videoId: string }) => {
             />
             <Button
               type="submit"
+              disabled={
+                status === "streaming" ||
+                status === "submitted" ||
+                !isVideoAnalysisEnabled
+              }
               className="px-4 py-2 bg-blue-500 text-white text-sm rounded-full hover:bg-blue-600 
             transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Send
+              {status === "streaming"
+                ? "AI is Replying"
+                : status === "submitted"
+                  ? "AI is Thinking"
+                  : "Send"}
             </Button>
           </form>
+
+          <div className="flex gap-2">
+            <button
+              className="text-xs xl:text-sm w-full flex items-center justify-center gap-2 py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={generateScript}
+              type="button"
+              disabled={!isScriptGenerationEnabled}
+            >
+              <LetterText className="w-4 h-4" />
+              {isScriptGenerationEnabled ? (
+                <span>Generate Script</span>
+              ) : (
+                <span>Upgrade to generate a script</span>
+              )}
+            </button>
+
+            <button
+              className="text-xs xl:text-sm w-full flex items-center justify-center gap-2 py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={generateTitle}
+              type="button"
+              disabled={!isTitleGenerationEnabled}
+            >
+              <PenIcon className="w-4 h-4" />
+              Generate Title
+            </button>
+
+            <button
+              className="text-xs xl:text-sm w-full flex items-center justify-center gap-2 py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={generateImage}
+              type="button"
+              disabled={!isImageGenerationEnabled}
+            >
+              <ImageIcon className="w-4 h-4" />
+              Generate Image
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -9,17 +9,16 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 const TitleGeneration = ({ videoId }: { videoId: string }) => {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
 
-  // if (!user) {
-  //   throw new Error("UnAuthorized");
-  // }
+  if (!user && isLoaded) {
+    throw new Error("UnAuthorized");
+  }
 
-  const titles = [];
-  // const titles = useQuery(api.titles.list, {
-  //   videoId: videoId,
-  //   userId: user?.id,
-  // });
+  const titles = useQuery(api.titles.list, {
+    videoId: videoId,
+    userId: user?.id || "",
+  });
 
   const { value: isTitleGenerationEnabled } = useSchematicEntitlement(
     FeatureFlag.TITLE_GENERATIONS

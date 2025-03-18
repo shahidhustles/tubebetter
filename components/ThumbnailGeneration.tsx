@@ -19,6 +19,8 @@ const ThumbnailGeneration = ({ videoId }: { videoId: string }) => {
     userId: user?.id || "",
   });
 
+  console.log(images);
+
   return (
     <div className="rounded-xl flex flex-col p-4 border">
       <div className="min-w-52">
@@ -29,26 +31,42 @@ const ThumbnailGeneration = ({ videoId }: { videoId: string }) => {
       </div>
 
       {/* Simple horizontal scroll for images */}
-      <div
-        className={`flex overflow-x-auto gap-4 ${images?.length ? "mt-4" : ""}`}
-      >
-        {images?.map(
-          (image) =>
-            image.url && (
-              <div
-                key={image._id}
-                className="flex-none w-[200px] h-[110px] rounded-lg overflow-x-auto"
-              >
-                <Image
-                  src={image.url}
-                  alt="Generated Image"
-                  width={200}
-                  height={200}
-                  className="object-cover"
-                />
-              </div>
-            )
-        )}
+      <div className="w-full">
+        <div
+          className={`flex overflow-x-scroll gap-4 pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent ${
+            images?.length ? "mt-4" : ""
+          }`}
+          style={{
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "thin",
+            msOverflowStyle: "auto",
+          }}
+        >
+          {images?.map(
+            (image) =>
+              image.url && (
+                <div
+                  key={image._id}
+                  className="flex-none flex-shrink-0 w-[200px] h-[110px] rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                >
+                  <a
+                    href={image.url}
+                    download={`thumbnail-${image._id}.jpg`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Image
+                      src={image.url}
+                      alt="Generated Image"
+                      width={200}
+                      height={110}
+                      className="object-cover w-full h-full rounded-lg"
+                    />
+                  </a>
+                </div>
+              )
+          )}
+        </div>
       </div>
 
       {/* No images generated yet */}

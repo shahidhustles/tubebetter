@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 
 export const list = query({
   args: {
@@ -7,13 +7,26 @@ export const list = query({
     userId: v.string(),
   },
   handler: async (ctx, args) => {
-    
-
     return await ctx.db
       .query("titles")
       .withIndex("by_user_and_video")
       .filter((q) => q.eq("userId", args.userId))
       .filter((q) => q.eq("videoId", args.videoId))
       .collect();
+  },
+});
+
+export const saveGeneratedTitles = mutation({
+  args: {
+    videoId: v.string(),
+    userId: v.string(),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.insert("titles", {
+      title: args.title,
+      userId: args.userId,
+      videoId: args.videoId,
+    });
   },
 });

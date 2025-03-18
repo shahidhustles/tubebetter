@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
         port: '',
         search: '',
       },
+      {
+        protocol: 'https',
+        hostname: '"basic-chameleon-66.convex.cloud"',
+        port: '',
+        search: '',
+      },
     ],
   },
 };

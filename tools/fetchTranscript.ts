@@ -2,7 +2,8 @@ import { getYoutubeTranscript } from "@/actions/getYoutubeTranscript";
 import { tool } from "ai";
 import { z } from "zod";
 
-//make sure tools are not *functions*
+//tools can also be *functions*,
+// (in case we have to use parameters in execute function which are not passed in execute function )
 export const fetchTranscript = tool({
   description: "Fetch the transcript of a youtube video in segments",
   parameters: z.object({
