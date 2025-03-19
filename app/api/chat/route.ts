@@ -1,5 +1,4 @@
 import { getVideoDetails } from "@/actions/getVideoDetails";
-import { createGroq } from "@ai-sdk/groq";
 import { currentUser } from "@clerk/nextjs/server";
 import { streamText, tool } from "ai";
 import { NextResponse } from "next/server";
@@ -10,9 +9,6 @@ import { z } from "zod";
 import { getVideoIdFromUrl } from "@/lib/getVideoIdFromUrl";
 import generateTitle from "@/tools/generateTitles";
 
-const groq = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
-});
 
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
@@ -36,10 +32,10 @@ export async function POST(req: Request) {
    explain that the transcript is cached because they previously transcribed the video saving the user a token - use words
     like database instead of cache to make it more easy to understand. Please format for notion. For every question which 
     requires more context you can use "fetchTranscript" tool from your arsenal,take the help of the transcript and then decide on the best performing prompt for the thumbnail,
-     for generating thumbnail use "generateImage" tool`;
+     for generating thumbnail use "generateImage" tool. For generating titles use "generateTitle" tools and it will be helpfull
+     if you pass in some summary and consideration from the transcript to provide better titles`;
 
   const result = streamText({
-    // model : groq("gemma2-9b-it"),
     model: google("gemini-1.5-flash"),
     messages: [
       {

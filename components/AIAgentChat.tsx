@@ -7,8 +7,10 @@ import { UIMessage } from "ai";
 import { Message, ToolInvocationUIPart } from "@ai-sdk/ui-utils";
 import { useSchematicFlag } from "@schematichq/schematic-react";
 import { FeatureFlag } from "@/features/flags";
-import { ImageIcon, LetterText, PenIcon } from "lucide-react";
+import { BotIcon, ImageIcon, LetterText, PenIcon } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 const formatToolInvocation = (part: ToolPart) => {
   if (!part.toolInvocation) return "Unknown Tool";
@@ -27,6 +29,10 @@ interface ToolPart {
 }
 
 const AIAgentChat = ({ videoId }: { videoId: string }) => {
+  //Scrolling to bottom logic
+  const bottomRef = useRef<HTMLDivElement>(null) 
+  const messageContainerRef = useRef<HTMLDivElement>(null)
+
   const { messages, input, handleInputChange, handleSubmit, append, status } =
     useChat({
       maxSteps: 5,
@@ -47,6 +53,44 @@ const AIAgentChat = ({ videoId }: { videoId: string }) => {
     FeatureFlag.TITLE_GENERATIONS
   );
   const isVideoAnalysisEnabled = useSchematicFlag(FeatureFlag.ANALYSE_VIDEO);
+
+useEffect(() => {
+  let toastId;
+
+  switch (status) {
+    case "submitted":
+      toastId = toast("Agent is thinking...", {
+        id: toastId,
+        icon: <BotIcon className="w-4 h-4" />,
+      });
+      break;
+    case "streaming":
+      toastId = toast("Agent is replying...", {
+        id: toastId,
+        icon: <BotIcon className="w-4 h-4" />,
+      });
+      break;
+    case "error":
+      toastId = toast("Whoops! Something went wrong, please try again.", {
+        id: toastId,
+        icon: <BotIcon className="w-4 h-4" />,
+      });
+      break;
+    case "ready":
+      toast.dismiss(toastId);
+
+      break;
+  }
+
+}, [status])
+
+//scroll as the message streams
+useEffect(() => {
+if(bottomRef.current && messageContainerRef.current) {
+  messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight
+}
+}, [messages])
+
 
   //pragrammaticaly generate script
   const generateScript = async () => {
@@ -147,7 +191,7 @@ const AIAgentChat = ({ videoId }: { videoId: string }) => {
       </div>
 
       {/* Messages */}
-      <div className="overflow-y-auto flex-1 px-4 py-4">
+      <div className="overflow-y-auto flex-1 px-4 py-4" ref={messageContainerRef}>
         <div className="space-y-6">
           {messages.length === 0 && (
             <div className="flex items-center justify-center h-full min-h-[200px]">
@@ -174,6 +218,7 @@ const AIAgentChat = ({ videoId }: { videoId: string }) => {
               </div>
             </div>
           ))}
+          <div ref={bottomRef}></div>
         </div>
       </div>
 

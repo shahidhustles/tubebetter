@@ -9,9 +9,9 @@ export const list = query({
   handler: async (ctx, args) => {
     return await ctx.db
       .query("titles")
-      .withIndex("by_user_and_video")
-      .filter((q) => q.eq("userId", args.userId))
-      .filter((q) => q.eq("videoId", args.videoId))
+      .withIndex("by_user_and_video", (q) =>
+        q.eq("userId", args.userId).eq("videoId", args.videoId)
+      )
       .collect();
   },
 });
